@@ -33,6 +33,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dropwizard.version>0.8.2</dropwizard.version>
+		<emax.version>0.0.1-SNAPSHOT</emax.version>
+		<jetty.version>9.2.9.v20150224</jetty.version>
 	</properties>
 
 	<scm>
@@ -120,17 +122,39 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>1.6</version>
 				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<mainClass>io.emax.cosigner.client.cli.Application</mainClass>
-							<classpathPrefix>lib/</classpathPrefix>
-						</manifest>
-					</archive>
+					<createDependencyReducedPom>true</createDependencyReducedPom>
+					<filters>
+						<filter>
+							<artifact>*:*</artifact>
+							<excludes>
+								<exclude>META-INF/*.SF</exclude>
+								<exclude>META-INF/*.DSA</exclude>
+								<exclude>META-INF/*.RSA</exclude>
+							</excludes>
+						</filter>
+					</filters>
 				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>io.emax.cosigner.client.cli.Application</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -188,9 +212,29 @@
 	</build>
 	<dependencies>
 		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-client</artifactId>
+			<version>${jetty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty.websocket</groupId>
+			<artifactId>websocket-client</artifactId>
+			<version>${jetty.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>io.dropwizard</groupId>
 			<artifactId>dropwizard-client</artifactId>
 			<version>${dropwizard.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.emax</groupId>
+			<artifactId>cosigner-api</artifactId>
+			<version>${emax.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.emax</groupId>
+			<artifactId>cosigner-common</artifactId>
+			<version>${emax.version}</version>
 		</dependency>
 	</dependencies>
 </project>
