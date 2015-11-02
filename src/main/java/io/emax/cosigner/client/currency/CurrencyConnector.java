@@ -23,14 +23,13 @@ public class CurrencyConnector {
   private ClientConfiguration config = new ClientConfiguration();
   private HttpClient httpClient = new HttpClient();
   private WebSocketClient webSocketClient = new WebSocketClient();
-  private Future<Session> wsSession;
   private MonitorWebSocket monitorSocket = new MonitorWebSocket();
 
   private String restPostRequest(String endpoint, String content) {
     try {
-      logger.debug("Sending POST request to: " + config.getServerUrl() + endpoint);
+      logger.debug("Sending POST request to: " + config.getRsServerUrl() + endpoint);
       httpClient.start();
-      Request request = httpClient.newRequest(config.getServerUrl() + endpoint);
+      Request request = httpClient.newRequest(config.getRsServerUrl() + endpoint);
       request = request.method(HttpMethod.POST);
       request = request.content(new StringContentProvider(content, "application/json"));
       ContentResponse response = request.send();
@@ -45,9 +44,9 @@ public class CurrencyConnector {
 
   private String restGetRequest(String endpoint) {
     try {
-      logger.debug("Sending GET request to: " + config.getServerUrl() + endpoint);
+      logger.debug("Sending GET request to: " + config.getRsServerUrl() + endpoint);
       httpClient.start();
-      Request request = httpClient.newRequest(config.getServerUrl() + endpoint);
+      Request request = httpClient.newRequest(config.getRsServerUrl() + endpoint);
       request = request.method(HttpMethod.GET);
       ContentResponse response = request.send();
       httpClient.stop();
@@ -114,19 +113,24 @@ public class CurrencyConnector {
    * distinguished from balance updates in that the transaction data portion of the response has
    * data, it contains the transaction hash.
    */
-  public String monitorBalance(CurrencyParameters params) {
+  public MonitorWebSocket monitorBalance(CurrencyParameters params) {
     try {
-      // TODO Write an observable/subscription and return that.
-      // Have it listen to the incoming data and parse/convert into a balance map & transaction list
-      wsSession = webSocketClient.connect(monitorSocket,
-          new URI(config.getServerUrl() + "/ws/MonitorBalance"));
-      // Since we're not doing anything right now, close the socket to keep it clean.
-      wsSession.get().close();
+      logger.debug("Connecting to websocket: " + config.getWsServerUrl() + "/ws/MonitorBalance");
+      logger.debug(
+          "Starting websocket with: " + Json.stringifyObject(CurrencyParameters.class, params));
+      
+      if (!webSocketClient.isStarted()) {
+        webSocketClient.start();
+      }
+      Future<Session> session = webSocketClient.connect(monitorSocket,
+          new URI(config.getWsServerUrl() + "/ws/MonitorBalance"));
 
-      return "";
+      session.get().getRemote().sendString(Json.stringifyObject(CurrencyParameters.class, params));
+
+      return monitorSocket;
     } catch (Exception e) {
       logger.error(null, e);
-      return "";
+      return null;
     }
   }
 

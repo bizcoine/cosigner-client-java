@@ -14,13 +14,18 @@ public class ClientConfiguration {
   private static boolean configLoaded = false;
 
   // Configuration data
-  private static String serverUrl = "http://localhost:8080";
+  private static String rsServerUrl = "http://localhost:8080";
+  private static String wsServerUrl = "ws://localhost:8080";
   private static String caCert = "ca.pem";
   private static String clientCert = "client.pem";
   private static String clientKey = "client.key";
 
-  public String getServerUrl() {
-    return serverUrl;
+  public String getRsServerUrl() {
+    return rsServerUrl;
+  }
+
+  public String getWsServerUrl() {
+    return wsServerUrl;
   }
 
   public String getCaCert() {
@@ -47,18 +52,21 @@ public class ClientConfiguration {
         propertiesFile.close();
 
         // Load config
-        // serverUrl
-        serverUrl = cosignerProperties.getProperty("serverUrl", serverUrl);
-        
+        // rsServerUrl
+        rsServerUrl = cosignerProperties.getProperty("rsServerUrl", rsServerUrl);
+
+        // wsServerUrl
+        wsServerUrl = cosignerProperties.getProperty("wsServerUrl", wsServerUrl);
+
         // caCert
         caCert = cosignerProperties.getProperty("caCert", caCert);
-        
+
         // clientCert
         clientCert = cosignerProperties.getProperty("clientCert", clientCert);
-        
-        // clientKey 
+
+        // clientKey
         clientKey = cosignerProperties.getProperty("clientKey", clientKey);
-        
+
       } catch (IOException e) {
         if (propertiesFile != null) {
           try {
