@@ -9,6 +9,7 @@ import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
@@ -24,6 +25,23 @@ public class CurrencyConnector {
   private HttpClient httpClient = new HttpClient();
   private WebSocketClient webSocketClient = new WebSocketClient();
   private MonitorWebSocket monitorSocket = new MonitorWebSocket();
+
+  /**
+   * Constructor for the connector.
+   * 
+   * <p>Sets up TLS if it's configured.
+   */
+  public CurrencyConnector() {
+    if (config.useTls()) {
+      SslContextFactory sslContext = new SslContextFactory(config.getTlsKeystore());
+      sslContext.setKeyStorePassword(config.getTlsKeystorePassword());
+      sslContext.setTrustStorePath(config.getTlsKeystore());
+      sslContext.setTrustStorePassword(config.getTlsKeystorePassword());
+      sslContext.setCertAlias(config.getTlsCertAlias());
+      httpClient = new HttpClient(sslContext);
+      webSocketClient = new WebSocketClient(sslContext);
+    }
+  }
 
   private String restPostRequest(String endpoint, String content) {
     try {
@@ -118,7 +136,7 @@ public class CurrencyConnector {
       logger.debug("Connecting to websocket: " + config.getWsServerUrl() + "/ws/MonitorBalance");
       logger.debug(
           "Starting websocket with: " + Json.stringifyObject(CurrencyParameters.class, params));
-      
+
       if (!webSocketClient.isStarted()) {
         webSocketClient.start();
       }

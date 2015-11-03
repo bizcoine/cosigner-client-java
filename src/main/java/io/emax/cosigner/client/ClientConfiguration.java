@@ -14,11 +14,12 @@ public class ClientConfiguration {
   private static boolean configLoaded = false;
 
   // Configuration data
-  private static String rsServerUrl = "http://localhost:8080";
-  private static String wsServerUrl = "ws://localhost:8080";
-  private static String caCert = "ca.pem";
-  private static String clientCert = "client.pem";
-  private static String clientKey = "client.key";
+  private static String rsServerUrl = "https://localhost:8443";
+  private static String wsServerUrl = "wss://localhost:8443";
+  private static boolean useTls = true;
+  private static String tlsKeystore = "./cosigner.jks";
+  private static String tlsKeystorePassword = "cosigner";
+  private static String tlsCertAlias = "cosigner";
 
   public String getRsServerUrl() {
     return rsServerUrl;
@@ -28,16 +29,20 @@ public class ClientConfiguration {
     return wsServerUrl;
   }
 
-  public String getCaCert() {
-    return caCert;
+  public boolean useTls() {
+    return useTls;
   }
 
-  public String getClientCert() {
-    return clientCert;
+  public String getTlsKeystore() {
+    return tlsKeystore;
   }
 
-  public String getClientKey() {
-    return clientKey;
+  public String getTlsKeystorePassword() {
+    return tlsKeystorePassword;
+  }
+
+  public String getTlsCertAlias() {
+    return tlsCertAlias;
   }
 
   private static synchronized void loadConfig() {
@@ -58,14 +63,19 @@ public class ClientConfiguration {
         // wsServerUrl
         wsServerUrl = cosignerProperties.getProperty("wsServerUrl", wsServerUrl);
 
-        // caCert
-        caCert = cosignerProperties.getProperty("caCert", caCert);
+        // tlsKeystore
+        tlsKeystore = cosignerProperties.getProperty("tlsKeystore", tlsKeystore);
 
-        // clientCert
-        clientCert = cosignerProperties.getProperty("clientCert", clientCert);
+        // tlsKeystorePassword
+        tlsKeystorePassword =
+            cosignerProperties.getProperty("tlsKeystorePassword", tlsKeystorePassword);
 
-        // clientKey
-        clientKey = cosignerProperties.getProperty("clientKey", clientKey);
+        // tlsCertAlias
+        tlsCertAlias = cosignerProperties.getProperty("tlsCertAlias", tlsCertAlias);
+
+        // useTls
+        useTls =
+            Boolean.parseBoolean(cosignerProperties.getProperty("useTls", String.valueOf(useTls)));
 
       } catch (IOException e) {
         if (propertiesFile != null) {
