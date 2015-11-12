@@ -49,7 +49,7 @@ public class CurrencyConnector {
       httpClient.start();
       Request request = httpClient.newRequest(config.getRsServerUrl() + endpoint);
       request = request.method(HttpMethod.POST);
-      request = request.content(new StringContentProvider(content, "application/json"));
+      request = request.content(new StringContentProvider(content, "UTF-8"));
       ContentResponse response = request.send();
       httpClient.stop();
       logger.debug("Got response: " + response.getContentAsString());
