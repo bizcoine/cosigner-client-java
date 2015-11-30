@@ -26,6 +26,8 @@ public class CurrencyConnector {
   private WebSocketClient webSocketClient = new WebSocketClient();
   private MonitorWebSocket monitorSocket = new MonitorWebSocket();
 
+  // TODO create a local signing method for "bring-your-own-keys" setups.
+  
   /**
    * Constructor for the connector.
    * 
