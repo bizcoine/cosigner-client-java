@@ -16,14 +16,14 @@ import java.util.Arrays;
 
 /**
  * Command line option for running the library.
- * 
+ *
  * @author Tom
  *
  */
 public class Application {
   /**
    * Command line interface that provides basic access to the library.
-   * 
+   *
    * @param args Command line arguments, leave blank to see usage.
    */
   public static void main(String[] args) throws InterruptedException {
@@ -133,7 +133,11 @@ public class Application {
         if (args.length >= 5) {
           amount = new BigDecimal(args[4]);
         }
+        if (args.length >= 6) {
+          accountName = args[5];
+        }
         params.setCurrencySymbol(currency);
+        params.setUserKey(accountName);
         params.setAccount(Arrays.asList(address));
         rcpt.setAmount(amount.toPlainString());
         rcpt.setRecipientAddress(rcptAddress);
