@@ -5,3 +5,6 @@
 /.pmdruleset.xml
 /.project
 /infer-out
+.settings/
+.externalToolBuilders
+maven-eclipse.xml
