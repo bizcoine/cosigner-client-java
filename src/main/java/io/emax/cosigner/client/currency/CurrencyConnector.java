@@ -27,10 +27,10 @@ public class CurrencyConnector {
   private MonitorWebSocket monitorSocket = new MonitorWebSocket();
 
   // TODO create a local signing method for "bring-your-own-keys" setups.
-  
+
   /**
    * Constructor for the connector.
-   * 
+   *
    * <p>Sets up TLS if it's configured.
    */
   public CurrencyConnector() {
@@ -127,7 +127,7 @@ public class CurrencyConnector {
 
   /**
    * Sets up a monitor for the given addresses.
-   * 
+   *
    * <p>A monitor provides periodic balance updates, along with all known transactions when
    * initialized, and any new transactions that come in while it's active. Transactions can be
    * distinguished from balance updates in that the transaction data portion of the response has
@@ -156,7 +156,7 @@ public class CurrencyConnector {
 
   /**
    * Create and sign a transaction.
-   * 
+   *
    * <p>This only signs the transaction with the user's key, showing that the user has requested the
    * transaction. The server keys are not used until the approve stage.
    */
@@ -166,8 +166,27 @@ public class CurrencyConnector {
   }
 
   /**
+   * Get signing data for offline signature.
+   */
+  @SuppressWarnings("unchecked")
+  public Iterable<Iterable<String>> getSignatureString(CurrencyParameters params) {
+    String paramString = Json.stringifyObject(CurrencyParameters.class, params);
+    String response = restPostRequest("/rs/GetSignatureString", paramString);
+    return (Iterable<Iterable<String>>)Json.objectifyString(Iterable.class, response);
+  }
+
+  /**
+   * Apply an offline signature to transaction.
+   */
+  public String applySignature(CurrencyParameters params) {
+    String paramString = Json.stringifyObject(CurrencyParameters.class, params);
+    String response = restPostRequest("/rs/ApplySignature", paramString);
+    return response;
+  }
+
+  /**
    * Approve a transaction that's been signed off on by the user.
-   * 
+   *
    * <p>This stage signs the transaction with the server keys after running it through any sanity
    * checks and validation required.
    */
