@@ -9,3 +9,5 @@
 .externalToolBuilders
 maven-eclipse.xml
 .*.swp
+.idea/
+*.iml
