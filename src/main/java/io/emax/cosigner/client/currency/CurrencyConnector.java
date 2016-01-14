@@ -53,12 +53,17 @@ public class CurrencyConnector {
       request = request.method(HttpMethod.POST);
       request = request.content(new StringContentProvider(content, "UTF-8"));
       ContentResponse response = request.send();
-      httpClient.stop();
       logger.debug("Got response: " + response.getContentAsString());
       return response.getContentAsString();
     } catch (Exception e) {
       logger.error(null, e);
       return "";
+    } finally {
+      try {
+        httpClient.stop();
+      } catch (Exception e) {
+        logger.error(null, e);
+      }
     }
   }
 
@@ -69,12 +74,17 @@ public class CurrencyConnector {
       Request request = httpClient.newRequest(config.getRsServerUrl() + endpoint);
       request = request.method(HttpMethod.GET);
       ContentResponse response = request.send();
-      httpClient.stop();
       logger.debug("Got response: " + response.getContentAsString());
       return response.getContentAsString();
     } catch (Exception e) {
       logger.error(null, e);
       return "";
+    } finally {
+      try {
+        httpClient.stop();
+      } catch (Exception e) {
+        logger.error(null, e);
+      }
     }
   }
 
@@ -150,6 +160,11 @@ public class CurrencyConnector {
       return monitorSocket;
     } catch (Exception e) {
       logger.error(null, e);
+      try {
+        webSocketClient.stop();
+      } catch (Exception e1) {
+        logger.error(null, e);
+      }
       return null;
     }
   }
