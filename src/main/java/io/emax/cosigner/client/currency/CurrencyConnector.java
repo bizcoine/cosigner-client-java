@@ -21,10 +21,10 @@ import java.util.concurrent.Future;
 
 public class CurrencyConnector {
   private static final Logger logger = LoggerFactory.getLogger(CurrencyConnector.class);
-  private ClientConfiguration config = new ClientConfiguration();
+  private final ClientConfiguration config = new ClientConfiguration();
   private HttpClient httpClient = new HttpClient();
   private WebSocketClient webSocketClient = new WebSocketClient();
-  private MonitorWebSocket monitorSocket = new MonitorWebSocket();
+  private final MonitorWebSocket monitorSocket = new MonitorWebSocket();
 
   // TODO create a local signing method for "bring-your-own-keys" setups.
 
@@ -172,7 +172,7 @@ public class CurrencyConnector {
   public Iterable<Iterable<String>> getSignatureString(CurrencyParameters params) {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     String response = restPostRequest("/rs/GetSignatureString", paramString);
-    return (Iterable<Iterable<String>>)Json.objectifyString(Iterable.class, response);
+    return (Iterable<Iterable<String>>) Json.objectifyString(Iterable.class, response);
   }
 
   /**
@@ -180,8 +180,7 @@ public class CurrencyConnector {
    */
   public String applySignature(CurrencyParameters params) {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
-    String response = restPostRequest("/rs/ApplySignature", paramString);
-    return response;
+    return restPostRequest("/rs/ApplySignature", paramString);
   }
 
   /**

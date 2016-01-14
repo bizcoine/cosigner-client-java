@@ -21,9 +21,9 @@ public class MonitorWebSocket {
 
   private String buffer = "";
 
-  private HashMap<String, String> balances = new HashMap<>();
-  private HashSet<CurrencyParameters> allTransactions = new HashSet<>();
-  private HashSet<CurrencyParameters> newTransactions = new HashSet<>();
+  private final HashMap<String, String> balances = new HashMap<>();
+  private final HashSet<CurrencyParameters> allTransactions = new HashSet<>();
+  private final HashSet<CurrencyParameters> newTransactions = new HashSet<>();
 
   public HashMap<String, String> getAllBalances() {
     return balances;
@@ -101,9 +101,8 @@ public class MonitorWebSocket {
         if (params.getReceivingAccount() == null) {
           continue;
         }
-        params.getReceivingAccount().forEach(account -> {
-          balances.put(account.getRecipientAddress(), account.getAmount());
-        });
+        params.getReceivingAccount()
+            .forEach(account -> balances.put(account.getRecipientAddress(), account.getAmount()));
       } else {
         // TX update
         if (!allTransactions.contains(params)) {

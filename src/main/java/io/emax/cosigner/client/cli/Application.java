@@ -11,14 +11,13 @@ import io.emax.cosigner.client.currency.MonitorWebSocket;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.Collections;
 
 
 /**
  * Command line option for running the library.
  *
  * @author Tom
- *
  */
 public class Application {
   /**
@@ -73,7 +72,7 @@ public class Application {
         }
         params.setCurrencySymbol(currency);
         params.setUserKey(accountName);
-        params.setAccount(Arrays.asList(address));
+        params.setAccount(Collections.singletonList(address));
         System.out.println(connector.registerAddress(params));
         break;
       case "getNewAddress":
@@ -106,7 +105,7 @@ public class Application {
           address = args[2];
         }
         params.setCurrencySymbol(currency);
-        params.setAccount(Arrays.asList(address));
+        params.setAccount(Collections.singletonList(address));
         System.out.println(connector.listTransactions(params));
         break;
       case "getBalance":
@@ -117,7 +116,7 @@ public class Application {
           address = args[2];
         }
         params.setCurrencySymbol(currency);
-        params.setAccount(Arrays.asList(address));
+        params.setAccount(Collections.singletonList(address));
         System.out.println(connector.getBalance(params));
         break;
       case "prepareTransaction":
@@ -138,10 +137,10 @@ public class Application {
         }
         params.setCurrencySymbol(currency);
         params.setUserKey(accountName);
-        params.setAccount(Arrays.asList(address));
+        params.setAccount(Collections.singletonList(address));
         rcpt.setAmount(amount.toPlainString());
         rcpt.setRecipientAddress(rcptAddress);
-        params.setReceivingAccount(Arrays.asList(rcpt));
+        params.setReceivingAccount(Collections.singletonList(rcpt));
         System.out.println(connector.prepareTransaction(params));
         break;
       case "approveTransaction":
@@ -155,7 +154,7 @@ public class Application {
           address = args[3];
         }
         params.setCurrencySymbol(currency);
-        params.setAccount(Arrays.asList(address));
+        params.setAccount(Collections.singletonList(address));
         params.setTransactionData(tx);
         System.out.println(connector.approveTransaction(params));
         break;
@@ -181,7 +180,7 @@ public class Application {
           address = args[2];
         }
         params.setCurrencySymbol(currency);
-        params.setAccount(Arrays.asList(address));
+        params.setAccount(Collections.singletonList(address));
 
         System.out.println("Hit Ctrl+C to close the websocket.");
         MonitorWebSocket socket = connector.monitorBalance(params);
@@ -190,12 +189,10 @@ public class Application {
           Thread.sleep(1000 * 5);
 
           // Print the information
-          socket.getAllBalances().forEach((balAddress, balance) -> {
-            System.out.println("Address: " + balAddress + " Balance: " + balance);
-          });
-          socket.getNewTransactions().forEach(transaction -> {
-            System.out.println("New Transaction: " + transaction);
-          });
+          socket.getAllBalances().forEach((balAddress, balance) -> System.out
+              .println("Address: " + balAddress + " Balance: " + balance));
+          socket.getNewTransactions()
+              .forEach(transaction -> System.out.println("New Transaction: " + transaction));
         }
     }
   }
