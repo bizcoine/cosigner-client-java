@@ -1,8 +1,14 @@
 package io.emax.cosigner.client.currency;
 
+import io.emax.cosigner.api.core.CurrencyPackage;
 import io.emax.cosigner.api.core.CurrencyParameters;
+import io.emax.cosigner.api.currency.Wallet;
+import io.emax.cosigner.bitcoin.BitcoinConfiguration;
+import io.emax.cosigner.bitcoin.BitcoinWallet;
 import io.emax.cosigner.client.ClientConfiguration;
 import io.emax.cosigner.common.Json;
+import io.emax.cosigner.ethereum.EthereumConfiguration;
+import io.emax.cosigner.ethereum.EthereumWallet;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
@@ -16,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.LinkedList;
 import java.util.concurrent.Future;
 
 
@@ -86,6 +93,50 @@ public class CurrencyConnector {
         logger.error(null, e);
       }
     }
+  }
+
+  /**
+   * Get wallets, with optional filter on currency code.
+   */
+  @SuppressWarnings("unchecked")
+  public Iterable<Wallet> getWallets(Iterable<String> currencies, boolean onlyShowSupported) {
+    // Build collection of all known currencies first.
+    LinkedList<CurrencyPackage> currencyPackages = new LinkedList<>();
+    // BTC
+    CurrencyPackage bitcoinPackage = new CurrencyPackage();
+    bitcoinPackage.setConfiguration(new BitcoinConfiguration());
+    bitcoinPackage.setWallet(new BitcoinWallet());
+    currencyPackages.add(bitcoinPackage);
+    // ETH
+    CurrencyPackage ethereumPackage = new CurrencyPackage();
+    ethereumPackage.setConfiguration(new EthereumConfiguration());
+    ethereumPackage.setWallet(new EthereumWallet());
+    currencyPackages.add(ethereumPackage);
+
+    LinkedList<String> supportedCurrencies = new LinkedList<>();
+    if (onlyShowSupported) {
+      supportedCurrencies
+          .addAll((LinkedList<String>) Json.objectifyString(LinkedList.class, listCurrencies()));
+    }
+
+    LinkedList<Wallet> wallets = new LinkedList<>();
+    currencyPackages.forEach(currency -> {
+      if (onlyShowSupported
+          && supportedCurrencies.contains(currency.getConfiguration().getCurrencySymbol())
+          || !onlyShowSupported) {
+        if (currencies != null && currencies.iterator().hasNext()) {
+          currencies.forEach(filter -> {
+            if (filter.equalsIgnoreCase(currency.getConfiguration().getCurrencySymbol())) {
+              wallets.add(currency.getWallet());
+            }
+          });
+        } else {
+          wallets.add(currency.getWallet());
+        }
+      }
+    });
+
+    return wallets;
   }
 
   /**

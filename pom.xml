@@ -241,6 +241,16 @@
             <artifactId>cosigner-common</artifactId>
             <version>${emax.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.emax</groupId>
+            <artifactId>cosigner-bitcoin</artifactId>
+            <version>${emax.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.emax</groupId>
+            <artifactId>cosigner-ethereum</artifactId>
+            <version>${emax.version}</version>
+        </dependency>
     </dependencies>
 </project>
 
