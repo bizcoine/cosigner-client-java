@@ -163,6 +163,14 @@ public class CurrencyConnector {
   }
 
   /**
+   * Convert a public key into the relevant address.
+   */
+  public String convertKeytoAddress(CurrencyParameters params) {
+    String paramString = Json.stringifyObject(CurrencyParameters.class, params);
+    return restPostRequest("/rs/GenerateAddressFromKey", paramString);
+  }
+
+  /**
    * List all addresses that we have generated for the given user key and currency.
    */
   public String listAllAddresses(CurrencyParameters params) {
