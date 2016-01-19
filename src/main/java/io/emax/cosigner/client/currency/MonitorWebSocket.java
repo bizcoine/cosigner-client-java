@@ -19,8 +19,6 @@ public class MonitorWebSocket {
   private static final Logger logger = LoggerFactory.getLogger(MonitorWebSocket.class);
   private Session session;
 
-  private String buffer = "";
-
   private final HashMap<String, String> balances = new HashMap<>();
   private final HashSet<CurrencyParameters> allTransactions = new HashSet<>();
   private final HashSet<CurrencyParameters> newTransactions = new HashSet<>();
@@ -62,53 +60,26 @@ public class MonitorWebSocket {
   public void onMessage(String msg) {
     logger.debug("Got message: " + msg);
 
-    buffer += msg;
+    // Parse the incoming message into a CurrencyParameters object
+    CurrencyParameters params =
+        (CurrencyParameters) Json.objectifyString(CurrencyParameters.class, msg);
 
-    while (!buffer.isEmpty()) {
-      // Read past whitespace
-      while (buffer.startsWith(" ")) {
-        buffer = buffer.substring(1);
-      }
+    if (params == null) {
+      logger.warn("Got bad websocket message: " + msg);
+      return;
+    }
 
-      // Read the size
-      int sizePos = buffer.indexOf("|");
-      if (sizePos == -1) {
-        logger.debug("Incomplete message");
+    if (params.getTransactionData() == null || params.getTransactionData().isEmpty()) {
+      if (params.getReceivingAccount() == null) {
         return;
       }
-      int size = Integer.parseInt(buffer.substring(0, sizePos));
-
-      // Read the message if it's all there.
-      if (buffer.substring(sizePos + 1).length() < size) {
-        logger.debug("Got a size, message too short.");
-        return;
-      }
-      String message = buffer.substring(sizePos + 1, sizePos + 1 + size);
-
-      // Advance the buffer.
-      buffer = buffer.substring(sizePos + 1 + size);
-
-      // Parse the incoming message into a CurrencyParameters object
-      CurrencyParameters params =
-          (CurrencyParameters) Json.objectifyString(CurrencyParameters.class, message);
-
-      if (params == null) {
-        logger.warn("Got bad websocket message: " + message);
-        continue;
-      }
-
-      if (params.getTransactionData() == null || params.getTransactionData().isEmpty()) {
-        if (params.getReceivingAccount() == null) {
-          continue;
-        }
-        params.getReceivingAccount()
-            .forEach(account -> balances.put(account.getRecipientAddress(), account.getAmount()));
-      } else {
-        // TX update
-        if (!allTransactions.contains(params)) {
-          newTransactions.add(params);
-          allTransactions.add(params);
-        }
+      params.getReceivingAccount()
+          .forEach(account -> balances.put(account.getRecipientAddress(), account.getAmount()));
+    } else {
+      // TX update
+      if (!allTransactions.contains(params)) {
+        newTransactions.add(params);
+        allTransactions.add(params);
       }
     }
   }
