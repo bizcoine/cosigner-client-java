@@ -40,6 +40,7 @@ public class Application {
       System.out.println("\tgetBalance(String currency, String address)");
       System.out.println("\tprepareTransaction(String currency, String fromAddress,"
           + "String toAddress, Decimal amount)");
+      System.out.println("\tgetSigners(String currency, String transaction)");
       System.out
           .println("\tapproveTransaction(String currency, String transaction, String address)");
       System.out.println("\tsendTransaction(String currency, String transaction)");
@@ -142,6 +143,17 @@ public class Application {
         rcpt.setRecipientAddress(rcptAddress);
         params.setReceivingAccount(Collections.singletonList(rcpt));
         System.out.println(connector.prepareTransaction(params));
+        break;
+      case "getSigners":
+        if (args.length >= 2) {
+          currency = args[1];
+        }
+        if (args.length >= 3) {
+          tx = args[2];
+        }
+        params.setCurrencySymbol(currency);
+        params.setTransactionData(tx);
+        System.out.println(connector.getSignersForTransaction(params));
         break;
       case "approveTransaction":
         if (args.length >= 2) {

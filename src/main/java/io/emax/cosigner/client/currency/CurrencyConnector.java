@@ -121,9 +121,8 @@ public class CurrencyConnector {
 
     LinkedList<Wallet> wallets = new LinkedList<>();
     currencyPackages.forEach(currency -> {
-      if (onlyShowSupported
-          && supportedCurrencies.contains(currency.getConfiguration().getCurrencySymbol())
-          || !onlyShowSupported) {
+      if (onlyShowSupported && supportedCurrencies
+          .contains(currency.getConfiguration().getCurrencySymbol()) || !onlyShowSupported) {
         if (currencies != null && currencies.iterator().hasNext()) {
           currencies.forEach(filter -> {
             if (filter.equalsIgnoreCase(currency.getConfiguration().getCurrencySymbol())) {
@@ -211,8 +210,8 @@ public class CurrencyConnector {
       if (!webSocketClient.isStarted()) {
         webSocketClient.start();
       }
-      Future<Session> session = webSocketClient.connect(monitorSocket,
-          new URI(config.getWsServerUrl() + "/ws/MonitorBalance"));
+      Future<Session> session = webSocketClient
+          .connect(monitorSocket, new URI(config.getWsServerUrl() + "/ws/MonitorBalance"));
 
       session.get().getRemote().sendString(Json.stringifyObject(CurrencyParameters.class, params));
 
@@ -237,6 +236,16 @@ public class CurrencyConnector {
   public String prepareTransaction(CurrencyParameters params) {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     return restPostRequest("/rs/PrepareTransaction", paramString);
+  }
+
+  /**
+   * Get list of addresses that could sign the transaction.
+   */
+  @SuppressWarnings("unchecked")
+  public Iterable<String> getSignersForTransaction(CurrencyParameters params) {
+    String paramString = Json.stringifyObject(CurrencyParameters.class, params);
+    String response = restPostRequest("/rs/GetSignersForTransaction", paramString);
+    return (Iterable<String>) Json.objectifyString(Iterable.class, response);
   }
 
   /**
