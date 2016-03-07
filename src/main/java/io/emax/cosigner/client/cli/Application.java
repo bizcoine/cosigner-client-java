@@ -43,7 +43,7 @@ public class Application {
       System.out.println("\tgetSigners(String currency, String transaction)");
       System.out
           .println("\tapproveTransaction(String currency, String transaction, String address)");
-      System.out.println("\tsendTransaction(String currency, String transaction)");
+      System.out.println("\tbroadcastTransaction(String currency, String transaction)");
       System.out.println("\tmonitorAddress(String currency, String address)");
       return;
     }
@@ -179,7 +179,7 @@ public class Application {
         }
         params.setCurrencySymbol(currency);
         params.setTransactionData(tx);
-        System.out.println(connector.submitTransaction(params));
+        System.out.println(connector.broadcastTransaction(params));
         break;
       default:
         System.out.println("Method not valid or not supported yet");

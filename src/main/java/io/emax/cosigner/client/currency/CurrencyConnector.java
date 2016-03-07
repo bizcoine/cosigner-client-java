@@ -280,8 +280,8 @@ public class CurrencyConnector {
   /**
    * Submits a transaction for processing on the network.
    */
-  public String submitTransaction(CurrencyParameters params) {
+  public String broadcastTransaction(CurrencyParameters params) {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
-    return restPostRequest("/rs/SubmitTransaction", paramString);
+    return restPostRequest("/rs/BroadcastTransaction", paramString);
   }
 }
