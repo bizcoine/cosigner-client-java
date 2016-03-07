@@ -170,7 +170,7 @@ public class Application {
         params.setTransactionData(tx);
         System.out.println(connector.approveTransaction(params));
         break;
-      case "sendTransaction":
+      case "broadcastTransaction":
         if (args.length >= 2) {
           currency = args[1];
         }
