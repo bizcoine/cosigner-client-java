@@ -25,7 +25,7 @@ public class Application {
    *
    * @param args Command line arguments, leave blank to see usage.
    */
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) throws Exception {
     Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     root.setLevel(Level.INFO);
 

@@ -1,5 +1,6 @@
 package io.emax.cosigner.client.currency;
 
+import io.emax.cosigner.api.core.CosignerResponse;
 import io.emax.cosigner.api.core.CurrencyPackage;
 import io.emax.cosigner.api.core.CurrencyParameters;
 import io.emax.cosigner.api.currency.Wallet;
@@ -52,7 +53,7 @@ public class CurrencyConnector {
     }
   }
 
-  private String restPostRequest(String endpoint, String content) {
+  private String restPostRequest(String endpoint, String content) throws Exception {
     try {
       logger.debug("Sending POST request to: " + config.getRsServerUrl() + endpoint);
       httpClient.start();
@@ -61,10 +62,15 @@ public class CurrencyConnector {
       request = request.content(new StringContentProvider(content, "UTF-8"));
       ContentResponse response = request.send();
       logger.debug("Got response: " + response.getContentAsString());
-      return response.getContentAsString();
+      CosignerResponse cosignerResponse = (CosignerResponse) Json
+          .objectifyString(CosignerResponse.class, response.getContentAsString());
+      if (cosignerResponse.getError() != null && !cosignerResponse.getError().isEmpty()) {
+        throw new Exception(cosignerResponse.getError());
+      }
+      return cosignerResponse.getResult();
     } catch (Exception e) {
       logger.error(null, e);
-      return "";
+      throw e;
     } finally {
       try {
         httpClient.stop();
@@ -74,7 +80,7 @@ public class CurrencyConnector {
     }
   }
 
-  private String restGetRequest(String endpoint) {
+  private String restGetRequest(String endpoint) throws Exception {
     try {
       logger.debug("Sending GET request to: " + config.getRsServerUrl() + endpoint);
       httpClient.start();
@@ -82,10 +88,15 @@ public class CurrencyConnector {
       request = request.method(HttpMethod.GET);
       ContentResponse response = request.send();
       logger.debug("Got response: " + response.getContentAsString());
-      return response.getContentAsString();
+      CosignerResponse cosignerResponse = (CosignerResponse) Json
+          .objectifyString(CosignerResponse.class, response.getContentAsString());
+      if (cosignerResponse.getError() != null && !cosignerResponse.getError().isEmpty()) {
+        throw new Exception(cosignerResponse.getError());
+      }
+      return cosignerResponse.getResult();
     } catch (Exception e) {
       logger.error(null, e);
-      return "";
+      throw e;
     } finally {
       try {
         httpClient.stop();
@@ -99,7 +110,8 @@ public class CurrencyConnector {
    * Get wallets, with optional filter on currency code.
    */
   @SuppressWarnings("unchecked")
-  public Iterable<Wallet> getWallets(Iterable<String> currencies, boolean onlyShowSupported) {
+  public Iterable<Wallet> getWallets(Iterable<String> currencies, boolean onlyShowSupported)
+      throws Exception {
     // Build collection of all known currencies first.
     LinkedList<CurrencyPackage> currencyPackages = new LinkedList<>();
     // BTC
@@ -141,14 +153,14 @@ public class CurrencyConnector {
   /**
    * List currencies provided by cosigner server.
    */
-  public String listCurrencies() {
+  public String listCurrencies() throws Exception {
     return restGetRequest("/rs/ListCurrencies");
   }
 
   /**
    * Registers addresses for currency libraries that need a watch list.
    */
-  public String registerAddress(CurrencyParameters params) {
+  public String registerAddress(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     return restPostRequest("/rs/RegisterAddress", paramString);
   }
@@ -156,7 +168,7 @@ public class CurrencyConnector {
   /**
    * Get a new address.
    */
-  public String getNewAddress(CurrencyParameters params) {
+  public String getNewAddress(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     return restPostRequest("/rs/GetNewAddress", paramString);
   }
@@ -164,7 +176,7 @@ public class CurrencyConnector {
   /**
    * Convert a public key into the relevant address.
    */
-  public String convertKeytoAddress(CurrencyParameters params) {
+  public String convertKeytoAddress(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     return restPostRequest("/rs/GenerateAddressFromKey", paramString);
   }
@@ -172,7 +184,7 @@ public class CurrencyConnector {
   /**
    * List all addresses that we have generated for the given user key and currency.
    */
-  public String listAllAddresses(CurrencyParameters params) {
+  public String listAllAddresses(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     return restPostRequest("/rs/ListAllAddresses", paramString);
   }
@@ -180,7 +192,7 @@ public class CurrencyConnector {
   /**
    * List transactions for the given address and currency.
    */
-  public String listTransactions(CurrencyParameters params) {
+  public String listTransactions(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     return restPostRequest("/rs/ListTransactions", paramString);
   }
@@ -188,7 +200,7 @@ public class CurrencyConnector {
   /**
    * Returns the combined balance of all addresses provided in the parameters.
    */
-  public String getBalance(CurrencyParameters params) {
+  public String getBalance(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     return restPostRequest("/rs/GetBalance", paramString);
   }
@@ -233,7 +245,7 @@ public class CurrencyConnector {
    * <p>This only signs the transaction with the user's key, showing that the user has requested the
    * transaction. The server keys are not used until the approve stage.
    */
-  public String prepareTransaction(CurrencyParameters params) {
+  public String prepareTransaction(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     return restPostRequest("/rs/PrepareTransaction", paramString);
   }
@@ -242,7 +254,7 @@ public class CurrencyConnector {
    * Get list of addresses that could sign the transaction.
    */
   @SuppressWarnings("unchecked")
-  public Iterable<String> getSignersForTransaction(CurrencyParameters params) {
+  public Iterable<String> getSignersForTransaction(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     String response = restPostRequest("/rs/GetSignersForTransaction", paramString);
     return (Iterable<String>) Json.objectifyString(Iterable.class, response);
@@ -252,7 +264,7 @@ public class CurrencyConnector {
    * Get signing data for offline signature.
    */
   @SuppressWarnings("unchecked")
-  public Iterable<Iterable<String>> getSignatureString(CurrencyParameters params) {
+  public Iterable<Iterable<String>> getSignatureString(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     String response = restPostRequest("/rs/GetSignatureString", paramString);
     return (Iterable<Iterable<String>>) Json.objectifyString(Iterable.class, response);
@@ -261,7 +273,7 @@ public class CurrencyConnector {
   /**
    * Apply an offline signature to transaction.
    */
-  public String applySignature(CurrencyParameters params) {
+  public String applySignature(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     return restPostRequest("/rs/ApplySignature", paramString);
   }
@@ -272,7 +284,7 @@ public class CurrencyConnector {
    * <p>This stage signs the transaction with the server keys after running it through any sanity
    * checks and validation required.
    */
-  public String approveTransaction(CurrencyParameters params) {
+  public String approveTransaction(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     return restPostRequest("/rs/ApproveTransaction", paramString);
   }
@@ -280,7 +292,7 @@ public class CurrencyConnector {
   /**
    * Submits a transaction for processing on the network.
    */
-  public String broadcastTransaction(CurrencyParameters params) {
+  public String broadcastTransaction(CurrencyParameters params) throws Exception {
     String paramString = Json.stringifyObject(CurrencyParameters.class, params);
     return restPostRequest("/rs/BroadcastTransaction", paramString);
   }
