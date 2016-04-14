@@ -36,7 +36,8 @@ public class Application {
       System.out.println("\tregisterAddress(String currency, String address, String accountName)");
       System.out.println("\tgetNewAddress(String currency, String accountName)");
       System.out.println("\tlistAllAddresses(String currency, String accountName)");
-      System.out.println("\tlistTransactions(String currency, String address)");
+      System.out.println(
+          "\tlistTransactions(String currency, String address, int returnNumber, int skipNumber)");
       System.out.println("\tgetBalance(String currency, String address)");
       System.out.println("\tprepareTransaction(String currency, String fromAddress,"
           + "String toAddress, Decimal amount)");
@@ -105,8 +106,15 @@ public class Application {
         if (args.length >= 3) {
           address = args[2];
         }
+        if (args.length >= 4) {
+          tx = args[3];
+        }
+        if (args.length >= 5) {
+          tx = tx + ":" + args[4];
+        }
         params.setCurrencySymbol(currency);
         params.setAccount(Collections.singletonList(address));
+        params.setTransactionData(tx);
         System.out.println(connector.listTransactions(params));
         break;
       case "getBalance":
