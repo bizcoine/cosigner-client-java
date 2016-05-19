@@ -50,6 +50,13 @@
         </site>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <reporting>
         <plugins>
             <plugin>
@@ -236,24 +243,9 @@
             <version>0.9.1</version>
         </dependency>
         <dependency>
-            <groupId>io.emax</groupId>
-            <artifactId>cosigner-api</artifactId>
-            <version>${emax.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.emax</groupId>
-            <artifactId>cosigner-common</artifactId>
-            <version>${emax.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.emax</groupId>
-            <artifactId>cosigner-bitcoin</artifactId>
-            <version>${emax.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.emax</groupId>
-            <artifactId>cosigner-ethereum</artifactId>
-            <version>${emax.version}</version>
+            <groupId>com.github.Braveno</groupId>
+            <artifactId>cosigner</artifactId>
+            <version>-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
