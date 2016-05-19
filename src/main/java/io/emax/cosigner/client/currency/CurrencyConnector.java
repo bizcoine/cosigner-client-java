@@ -36,6 +36,14 @@ public class CurrencyConnector {
 
   // TODO create a local signing method for "bring-your-own-keys" setups.
 
+  public String stringifyParams(CurrencyParameters params) {
+    return Json.stringifyObject(CurrencyParameters.class, params);
+  }
+
+  public CurrencyParameters parameterizeString(String params) {
+    return (CurrencyParameters) Json.objectifyString(CurrencyParameters.class, params);
+  }
+
   /**
    * Constructor for the connector.
    *
