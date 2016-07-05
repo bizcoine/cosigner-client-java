@@ -205,6 +205,11 @@ public class CurrencyConnector {
     return restPostRequest("/rs/ListTransactions", paramString);
   }
 
+  public String getTransaction(CurrencyParameters params) throws Exception {
+    String paramString = Json.stringifyObject(CurrencyParameters.class, params);
+    return restPostRequest("/rs/GetTransaction", paramString);
+  }
+
   /**
    * Returns the combined balance of all addresses provided in the parameters.
    */
