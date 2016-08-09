@@ -1,15 +1,11 @@
 package io.emax.cosigner.client.currency;
 
 import io.emax.cosigner.api.core.CosignerResponse;
-import io.emax.cosigner.api.core.CurrencyPackage;
+import io.emax.cosigner.api.core.CurrencyPackageInterface;
 import io.emax.cosigner.api.core.CurrencyParameters;
 import io.emax.cosigner.api.currency.Wallet;
-import io.emax.cosigner.bitcoin.BitcoinConfiguration;
-import io.emax.cosigner.bitcoin.BitcoinWallet;
 import io.emax.cosigner.client.ClientConfiguration;
 import io.emax.cosigner.common.Json;
-import io.emax.cosigner.ethereum.EthereumConfiguration;
-import io.emax.cosigner.ethereum.EthereumWallet;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
@@ -23,8 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.concurrent.Future;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 
 public class CurrencyConnector {
@@ -121,17 +122,37 @@ public class CurrencyConnector {
   public Iterable<Wallet> getWallets(Iterable<String> currencies, boolean onlyShowSupported)
       throws Exception {
     // Build collection of all known currencies first.
-    LinkedList<CurrencyPackage> currencyPackages = new LinkedList<>();
-    // BTC
-    CurrencyPackage bitcoinPackage = new CurrencyPackage();
-    bitcoinPackage.setConfiguration(new BitcoinConfiguration());
-    bitcoinPackage.setWallet(new BitcoinWallet());
-    currencyPackages.add(bitcoinPackage);
-    // ETH
-    CurrencyPackage ethereumPackage = new CurrencyPackage();
-    ethereumPackage.setConfiguration(new EthereumConfiguration());
-    ethereumPackage.setWallet(new EthereumWallet());
-    currencyPackages.add(ethereumPackage);
+    LinkedList<CurrencyPackageInterface> currencyPackages = new LinkedList<>();
+
+    String path =
+        CurrencyConnector.class.getProtectionDomain().getCodeSource().getLocation().toURI()
+            .getPath();
+
+    JarFile jarFile = new JarFile(path);
+    Enumeration<JarEntry> e = jarFile.entries();
+
+    URL[] urls = {new URL("jar:file:" + path + "!/")};
+    URLClassLoader cl = URLClassLoader.newInstance(urls);
+
+    while (e.hasMoreElements()) {
+      JarEntry je = e.nextElement();
+      if (je.isDirectory() || !je.getName().endsWith(".class")) {
+        continue;
+      }
+      // -6 because of .class
+      String className = je.getName().substring(0, je.getName().length() - 6);
+      className = className.replace('/', '.');
+      try {
+        Class c = cl.loadClass(className);
+        if (CurrencyPackageInterface.class.isAssignableFrom(c)) {
+          CurrencyPackageInterface newCurrency = (CurrencyPackageInterface) c.newInstance();
+          currencyPackages.add(newCurrency);
+        }
+      } catch (NoClassDefFoundError | Exception ex) {
+        // It's ok if the class isn't valid, we may be trying to load the actual interface.
+        logger.debug("Failed to load", ex);
+      }
+    }
 
     LinkedList<String> supportedCurrencies = new LinkedList<>();
     if (onlyShowSupported) {
@@ -141,8 +162,8 @@ public class CurrencyConnector {
 
     LinkedList<Wallet> wallets = new LinkedList<>();
     currencyPackages.forEach(currency -> {
-      if (onlyShowSupported && supportedCurrencies
-          .contains(currency.getConfiguration().getCurrencySymbol()) || !onlyShowSupported) {
+      if (!onlyShowSupported || supportedCurrencies
+          .contains(currency.getConfiguration().getCurrencySymbol())) {
         if (currencies != null && currencies.iterator().hasNext()) {
           currencies.forEach(filter -> {
             if (filter.equalsIgnoreCase(currency.getConfiguration().getCurrencySymbol())) {
